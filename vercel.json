@@ -1,9 +1,7 @@
 {
-  "regions": ["fra1", "ams1"],
   "functions": {
     "app/api/**": {
       "runtime": "@vercel/node",
-      "regions": ["fra1", "ams1"],
       "maxDuration": 30
     }
   },
