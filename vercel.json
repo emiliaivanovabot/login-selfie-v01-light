@@ -56,11 +56,5 @@
       "source": "/terms",
       "destination": "/terms-of-service"
     }
-  ],
-  "crons": [
-    {
-      "path": "/api/cron/cleanup-expired-data",
-      "schedule": "0 */2 * * *"
-    }
   ]
 }
