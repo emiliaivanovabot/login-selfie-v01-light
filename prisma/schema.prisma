@@ -1,0 +1,103 @@
+// GDPR-COMPLIANT DATABASE SCHEMA
+// No user accounts - only session-based data with automatic cleanup
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// GDPR-compliant generation sessions with automatic expiry
+model GenerationSession {
+  sessionId         String   @id @default(uuid()) @map("session_id")
+
+  // File handling - temporary storage only
+  uploadFilename    String?  @map("upload_filename")
+  uploadPath        String?  @map("upload_path")
+  generatedImagePath String? @map("generated_image_path")
+
+  // Payment processing
+  stripeSessionId   String?  @map("stripe_session_id")
+  paymentStatus     PaymentStatus @default(PENDING) @map("payment_status")
+
+  // AI generation tracking
+  generationStatus  GenerationStatus @default(PENDING) @map("generation_status")
+  aiJobId           String?  @map("ai_job_id")
+
+  // GDPR compliance fields
+  dataConsent       Boolean  @default(false) @map("data_consent")
+  cookieConsent     Boolean  @default(false) @map("cookie_consent")
+  ipAddress         String?  @map("ip_address") // For security, not tracking
+  userAgent         String?  @map("user_agent") // For security, not tracking
+
+  // Automatic cleanup timestamps
+  createdAt         DateTime @default(now()) @map("created_at")
+  expiresAt         DateTime @map("expires_at") // 24h from creation
+  downloadCount     Int      @default(0) @map("download_count")
+  maxDownloads      Int      @default(1) @map("max_downloads")
+
+  // Data processing logs for GDPR transparency
+  dataProcessingLogs DataProcessingLog[]
+
+  @@map("generation_sessions")
+  @@index([expiresAt]) // For efficient cleanup
+  @@index([sessionId, paymentStatus])
+}
+
+// GDPR Article 30 - Records of processing activities
+model DataProcessingLog {
+  id          String   @id @default(uuid())
+  sessionId   String   @map("session_id")
+  session     GenerationSession @relation(fields: [sessionId], references: [sessionId], onDelete: Cascade)
+
+  action      String   // "upload", "payment", "generation", "download", "delete"
+  purpose     String   // "image_generation", "payment_processing", "file_delivery"
+  legalBasis  String   // "consent", "contract", "legitimate_interest"
+  dataTypes   String[] // ["image_data", "payment_info", "session_data"]
+
+  timestamp   DateTime @default(now())
+
+  @@map("data_processing_logs")
+  @@index([sessionId])
+  @@index([timestamp])
+}
+
+// Data deletion requests for GDPR Article 17
+model DataDeletionRequest {
+  id          String   @id @default(uuid())
+  sessionId   String   @unique @map("session_id")
+
+  requestedAt DateTime @default(now()) @map("requested_at")
+  processedAt DateTime? @map("processed_at")
+  status      DeletionStatus @default(PENDING)
+
+  // Verification for legitimate requests
+  verificationToken String @unique @map("verification_token")
+
+  @@map("data_deletion_requests")
+  @@index([status])
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum GenerationStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum DeletionStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}

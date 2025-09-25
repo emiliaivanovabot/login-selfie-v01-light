@@ -1,0 +1,139 @@
+# GDPR-COMPLIANT PROJECT GITIGNORE
+# Ensures sensitive data and large files are never committed
+
+# Dependencies
+node_modules/
+/.pnp
+.pnp.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Next.js build output
+.next/
+out/
+/dist
+/build
+
+# Environment variables and secrets
+.env*
+!.env.example
+
+# Database
+/prisma/migrations/
+/prisma/dev.db*
+*.db
+*.db-journal
+
+# GDPR-sensitive file storage directories
+/storage/
+storage/uploads/*
+storage/generated/*
+storage/temp/*
+# Keep the directories but not their contents
+!storage/uploads/.gitkeep
+!storage/generated/.gitkeep
+!storage/temp/.gitkeep
+
+# IDE and OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output/
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn v2
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# Vercel
+.vercel
+
+# Local development database backups
+*.backup
+*.sql
+
+# Temporary files
+*.tmp
+*.temp
+/tmp/
+
+# User uploaded content (handled by storage/ exclusions above)
+uploads/
+generated/
+temp/
+
+# Security scanning results
+.snyk
+
+# Local environment override files
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local.backup
