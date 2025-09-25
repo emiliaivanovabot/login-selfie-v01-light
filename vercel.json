@@ -1,7 +1,6 @@
 {
   "functions": {
     "app/api/**": {
-      "runtime": "@vercel/node",
       "maxDuration": 30
     }
   },
