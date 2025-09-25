@@ -1,11 +1,11 @@
 /* PREMIUM AI SELFIE GENERATOR - GLOBAL STYLES */
 
+/* Custom font loading for premium feel - MUST be first */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Custom font loading for premium feel */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 /* Premium base styles with accessibility */
 @layer base {
