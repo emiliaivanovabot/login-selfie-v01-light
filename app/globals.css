@@ -1,23 +1,52 @@
-/* GDPR-COMPLIANT GLOBAL STYLES */
+/* PREMIUM AI SELFIE GENERATOR - GLOBAL STYLES */
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Base styles with accessibility in mind */
+/* Custom font loading for premium feel */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+/* Premium base styles with accessibility */
 @layer base {
   html {
     scroll-behavior: smooth;
   }
 
   body {
-    @apply text-gray-900 bg-white;
+    @apply text-white bg-slate-900;
     font-feature-settings: 'rlig' 1, 'calt' 1;
+    font-optical-sizing: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Focus styles for accessibility */
+  /* Premium gradient text utility */
+  .gradient-text {
+    @apply bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent;
+  }
+
+  /* Glass morphism utility */
+  .glass {
+    @apply bg-white/10 backdrop-blur-xl border border-white/20;
+  }
+
+  /* Premium glow effects */
+  .glow-purple {
+    box-shadow: 0 0 20px rgba(147, 51, 234, 0.3);
+  }
+
+  .glow-blue {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+  }
+
+  /* Premium focus styles for accessibility */
   *:focus {
-    @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+    @apply outline-none ring-2 ring-purple-500/50 ring-offset-2 ring-offset-slate-900;
+  }
+
+  *:focus-visible {
+    @apply ring-purple-400/60 ring-offset-slate-900;
   }
 
   /* Form elements */
@@ -36,9 +65,18 @@
     @apply h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded;
   }
 
-  /* Button base styles */
+  /* Premium button base styles */
   button {
-    @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500/50 transition-all duration-300;
+  }
+
+  /* Premium button variants */
+  .btn-primary {
+    @apply bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold px-6 py-3 rounded-2xl shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-purple-500/25;
+  }
+
+  .btn-secondary {
+    @apply bg-white/10 backdrop-blur-xl border border-white/20 text-white font-medium px-6 py-3 rounded-2xl hover:bg-white/20 transition-all duration-300;
   }
 
   /* Link styles */
@@ -47,49 +85,107 @@
   }
 }
 
-/* Component styles */
+/* Premium component styles */
 @layer components {
-  /* GDPR Consent Banner Animations */
-  .consent-banner-enter {
-    @apply transform translate-y-full opacity-0;
-    animation: slideInUp 0.3s ease-out forwards;
+  /* Floating animation keyframes */
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes glow {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
   }
 
   @keyframes slideInUp {
+    from {
+      transform: translateY(100px);
+      opacity: 0;
+    }
     to {
-      @apply translate-y-0 opacity-100;
+      transform: translateY(0);
+      opacity: 1;
     }
   }
 
-  /* Privacy-focused upload area */
+  @keyframes slideInRight {
+    from {
+      transform: translateX(100px);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  /* Premium animation classes */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite;
+  }
+
+  .animate-slide-up {
+    animation: slideInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .animate-slide-right {
+    animation: slideInRight 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  /* Premium consent banner */
+  .consent-banner-enter {
+    @apply transform translate-y-full opacity-0;
+    animation: slideInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* Premium upload area */
   .upload-area {
-    @apply border-2 border-dashed border-gray-300 rounded-lg p-8 text-center transition-all duration-200;
+    @apply border-2 border-dashed border-white/30 rounded-3xl p-12 text-center transition-all duration-500 bg-white/5 backdrop-blur-xl;
   }
 
   .upload-area:hover {
-    @apply border-gray-400 bg-gray-50;
+    @apply border-white/50 bg-white/10 transform scale-102;
   }
 
   .upload-area.drag-active {
-    @apply border-blue-400 bg-blue-50;
+    @apply border-purple-400 bg-purple-500/10 transform scale-105;
   }
 
-  /* Data rights panel styles */
+  /* Premium data rights panel */
   .data-rights-card {
-    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200;
+    @apply bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-8 hover:bg-white/15 transition-all duration-300 hover:transform hover:scale-105 shadow-2xl;
   }
 
-  /* Processing status indicators */
+  /* Premium status indicators */
   .status-processing {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800;
+    @apply inline-flex items-center px-4 py-2 rounded-2xl text-sm font-semibold bg-blue-500/20 text-blue-300 border border-blue-400/30 backdrop-blur-xl;
   }
 
   .status-completed {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800;
+    @apply inline-flex items-center px-4 py-2 rounded-2xl text-sm font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 backdrop-blur-xl;
   }
 
   .status-failed {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800;
+    @apply inline-flex items-center px-4 py-2 rounded-2xl text-sm font-semibold bg-red-500/20 text-red-300 border border-red-400/30 backdrop-blur-xl;
   }
 
   /* GDPR compliance indicators */
@@ -101,40 +197,65 @@
     @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800;
   }
 
-  /* Loading states */
+  /* Premium loading states */
   .loading-spinner {
-    @apply animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-blue-600;
+    @apply animate-spin rounded-full h-6 w-6 border-3 border-white/30 border-t-purple-400;
   }
 
-  /* Toast notifications for GDPR actions */
+  .loading-dots::after {
+    content: '';
+    display: inline-block;
+    animation: dots 2s infinite;
+  }
+
+  @keyframes dots {
+    0%, 20% { content: ''; }
+    40% { content: '.'; }
+    60% { content: '..'; }
+    80%, 100% { content: '...'; }
+  }
+
+  /* Premium toast notifications */
   .toast-success {
-    @apply fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-50;
-    animation: slideInRight 0.3s ease-out, fadeOut 0.3s ease-out 2.7s forwards;
+    @apply fixed top-6 right-6 bg-emerald-500/90 backdrop-blur-xl text-white px-6 py-4 rounded-2xl shadow-2xl z-50 border border-emerald-400/30;
+    animation: slideInRight 0.5s cubic-bezier(0.16, 1, 0.3, 1), fadeOut 0.5s ease-out 3s forwards;
   }
 
   .toast-error {
-    @apply fixed top-4 right-4 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg z-50;
-    animation: slideInRight 0.3s ease-out, fadeOut 0.3s ease-out 4.7s forwards;
-  }
-
-  @keyframes slideInRight {
-    from {
-      @apply transform translate-x-full opacity-0;
-    }
-    to {
-      @apply transform translate-x-0 opacity-100;
-    }
+    @apply fixed top-6 right-6 bg-red-500/90 backdrop-blur-xl text-white px-6 py-4 rounded-2xl shadow-2xl z-50 border border-red-400/30;
+    animation: slideInRight 0.5s cubic-bezier(0.16, 1, 0.3, 1), fadeOut 0.5s ease-out 5s forwards;
   }
 
   @keyframes fadeOut {
     to {
-      @apply opacity-0;
+      @apply opacity-0 transform translate-x-full;
     }
   }
 }
 
-/* Utility styles */
+/* Premium utility styles */
 @layer utilities {
+  /* Premium spacing utilities */
+  .space-y-luxe > * + * {
+    margin-top: 2rem;
+  }
+
+  .space-x-luxe > * + * {
+    margin-left: 2rem;
+  }
+
+  /* Premium shadow utilities */
+  .shadow-luxe {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  }
+
+  .shadow-luxe-purple {
+    box-shadow: 0 25px 50px -12px rgba(147, 51, 234, 0.4), 0 0 0 1px rgba(147, 51, 234, 0.1);
+  }
+
+  .shadow-luxe-blue {
+    box-shadow: 0 25px 50px -12px rgba(59, 130, 246, 0.4), 0 0 0 1px rgba(59, 130, 246, 0.1);
+  }
   /* Privacy-focused color utilities */
   .text-privacy {
     @apply text-blue-600;
@@ -186,28 +307,60 @@
     }
   }
 
-  /* Reduced motion support */
+  /* Enhanced reduced motion support */
   @media (prefers-reduced-motion: reduce) {
-    * {
+    *,
+    *::before,
+    *::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+
+    .animate-float,
+    .animate-glow,
+    .animate-pulse {
+      animation: none !important;
+    }
+  }
+
+  /* High contrast mode enhancements */
+  @media (prefers-contrast: high) {
+    .glass {
+      @apply bg-white border-2 border-black;
+    }
+
+    button {
+      @apply border-2 border-current;
+    }
+
+    .gradient-text {
+      @apply text-white bg-none;
     }
   }
 }
 
-/* Dark mode support (minimal since this is a simple service) */
+/* Enhanced dark mode support */
 @media (prefers-color-scheme: dark) {
   body {
-    @apply bg-gray-900 text-gray-100;
+    @apply bg-slate-900 text-white;
   }
 
   .upload-area {
-    @apply bg-gray-800 border-gray-600;
+    @apply bg-white/5 border-white/20;
   }
 
   .data-rights-card {
-    @apply bg-gray-800 border-gray-700;
+    @apply bg-white/5 border-white/10;
+  }
+
+  /* Dark mode specific gradients */
+  .dark-gradient-bg {
+    background: linear-gradient(135deg,
+      rgba(15, 23, 42, 0.9) 0%,
+      rgba(88, 28, 135, 0.3) 50%,
+      rgba(15, 23, 42, 0.9) 100%);
   }
 }
 

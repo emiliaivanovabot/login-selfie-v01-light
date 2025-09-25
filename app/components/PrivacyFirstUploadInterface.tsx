@@ -290,30 +290,41 @@ export default function PrivacyFirstUploadInterface() {
         )}
       </div>
 
-      {/* Error Display */}
+      {/* Premium Error Display */}
       {uploadState.error && (
-        <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="w-5 h-5 text-red-600" />
-            <span className="font-medium text-red-900">Upload Error</span>
+        <div className="relative group animate-in slide-in-from-top duration-500">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-red-600 to-pink-600 rounded-2xl blur opacity-40"></div>
+          <div className="relative bg-red-500/10 backdrop-blur-xl border border-red-400/30 rounded-2xl p-6">
+            <div className="flex items-center gap-4 mb-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
+                <AlertCircle className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-lg font-semibold text-red-200">Upload Error</span>
+            </div>
+            <p className="text-red-100 leading-relaxed pl-14">{uploadState.error}</p>
           </div>
-          <p className="text-sm text-red-800 mt-1">{uploadState.error}</p>
         </div>
       )}
 
-      {/* GDPR Rights Footer */}
-      <div className="mt-6 text-center text-sm text-gray-500">
-        <p>
-          Your privacy rights: {' '}
-          <button className="text-blue-600 hover:underline">View my data</button>
-          {' • '}
-          <button className="text-blue-600 hover:underline">Delete my data</button>
-          {' • '}
-          <button className="text-blue-600 hover:underline">Export my data</button>
-        </p>
-        <p className="mt-1">
+      {/* Premium GDPR Rights Footer */}
+      <div className="text-center space-y-4">
+        <div className="flex flex-wrap justify-center gap-6 text-sm">
+          <button className="group flex items-center gap-2 text-purple-300 hover:text-white transition-all duration-300 hover:scale-105">
+            <div className="w-2 h-2 bg-purple-400 rounded-full group-hover:animate-pulse"></div>
+            View my data
+          </button>
+          <button className="group flex items-center gap-2 text-purple-300 hover:text-white transition-all duration-300 hover:scale-105">
+            <div className="w-2 h-2 bg-red-400 rounded-full group-hover:animate-pulse"></div>
+            Delete my data
+          </button>
+          <button className="group flex items-center gap-2 text-purple-300 hover:text-white transition-all duration-300 hover:scale-105">
+            <div className="w-2 h-2 bg-blue-400 rounded-full group-hover:animate-pulse"></div>
+            Export my data
+          </button>
+        </div>
+        <p className="text-gray-400">
           Questions? Contact our{' '}
-          <a href="mailto:privacy@aiselfiegenerator.com" className="text-blue-600 hover:underline">
+          <a href="mailto:privacy@aiselfiegenerator.com" className="text-blue-300 hover:text-white transition-colors duration-300 font-medium">
             Data Protection Officer
           </a>
         </p>
