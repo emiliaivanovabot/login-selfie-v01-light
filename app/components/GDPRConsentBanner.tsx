@@ -14,6 +14,7 @@ interface ConsentState {
 
 export default function GDPRConsentBanner() {
   const [isVisible, setIsVisible] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
   const [consent, setConsent] = useState<ConsentState>({
     dataProcessing: false,
@@ -23,6 +24,12 @@ export default function GDPRConsentBanner() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!mounted) return
+
     // Check if user already gave consent
     const checkConsentStatus = async () => {
       try {
@@ -33,13 +40,13 @@ export default function GDPRConsentBanner() {
           setIsVisible(true)
         }
       } catch (error) {
-        console.error('Failed to check consent status:', error)
+        console.error('GDPR Banner: Failed to check consent status:', error)
         setIsVisible(true) // Show banner on error to be safe
       }
     }
 
     checkConsentStatus()
-  }, [])
+  }, [mounted])
 
   const handleConsentSubmission = async (acceptAll: boolean = false) => {
     setIsSubmitting(true)
@@ -78,7 +85,10 @@ export default function GDPRConsentBanner() {
     }
   }
 
-  if (!isVisible) return null
+  // Prevent hydration mismatches by not rendering until mounted
+  if (!mounted || !isVisible) {
+    return null
+  }
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-end justify-center z-50 p-4">

@@ -20,8 +20,17 @@ export class GDPRSessionManager {
 
   // Create session with automatic expiry (24h)
   static async createSession(data: {
+    sessionId?: string
+    uploadedImage?: string
+    originalFilename?: string
+    fileType?: string
+    fileSize?: number
+    uploadTimestamp?: Date
     dataConsent: boolean
-    cookieConsent: boolean
+    cookieConsent?: boolean
+    processingConsent?: boolean
+    marketingConsent?: boolean
+    paymentStatus?: 'PENDING' | 'PAID' | 'FAILED'
     ipAddress?: string
     userAgent?: string
   }) {
@@ -29,7 +38,15 @@ export class GDPRSessionManager {
 
     const session = await prisma.generationSession.create({
       data: {
-        ...data,
+        sessionId: data.sessionId,
+        uploadFilename: data.originalFilename,
+        // Store base64 image temporarily in uploadPath field (will be processed)
+        uploadPath: data.uploadedImage ? `temp:${data.uploadedImage}` : undefined,
+        dataConsent: data.dataConsent,
+        cookieConsent: data.cookieConsent ?? false,
+        paymentStatus: data.paymentStatus as any ?? 'PENDING',
+        ipAddress: data.ipAddress,
+        userAgent: data.userAgent,
         expiresAt,
       },
     })
@@ -39,7 +56,7 @@ export class GDPRSessionManager {
       action: 'session_created',
       purpose: 'user_session_management',
       legalBasis: 'consent',
-      dataTypes: ['session_data', 'consent_preferences'],
+      dataTypes: ['session_data', 'consent_preferences', 'image_data'],
     })
 
     return session
@@ -99,7 +116,10 @@ export class GDPRSessionManager {
     return await prisma.dataProcessingLog.create({
       data: {
         sessionId,
-        ...log,
+        action: log.action,
+        purpose: log.purpose,
+        legalBasis: log.legalBasis,
+        dataTypes: log.dataTypes.join(','), // Convert array to comma-separated string
       },
     })
   }

@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -56,7 +56,7 @@ model DataProcessingLog {
   action      String   // "upload", "payment", "generation", "download", "delete"
   purpose     String   // "image_generation", "payment_processing", "file_delivery"
   legalBasis  String   // "consent", "contract", "legitimate_interest"
-  dataTypes   String[] // ["image_data", "payment_info", "session_data"]
+  dataTypes   String   // "image_data,payment_info,session_data" - comma separated
 
   timestamp   DateTime @default(now())
 

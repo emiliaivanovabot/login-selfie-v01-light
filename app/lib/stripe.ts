@@ -14,8 +14,8 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 
 // Payment configuration for selfie generation
 export const PAYMENT_CONFIG = {
-  SELFIE_PRICE: 299, // $2.99 in cents
-  CURRENCY: 'usd',
+  SELFIE_PRICE: 500, // €5.00 in cents
+  CURRENCY: 'eur',
   SUCCESS_URL: process.env.NODE_ENV === 'production'
     ? 'https://your-domain.com/payment/success'
     : 'http://localhost:3000/payment/success',
