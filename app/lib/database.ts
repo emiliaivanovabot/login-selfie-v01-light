@@ -126,7 +126,8 @@ export class GDPRSessionManager {
 
   // GDPR Article 17 - Right to erasure
   static async requestDataDeletion(sessionId: string) {
-    const verificationToken = require('uuid').v4()
+    const { v4: uuidv4 } = await import('uuid')
+    const verificationToken = uuidv4()
 
     const deletionRequest = await prisma.dataDeletionRequest.create({
       data: {

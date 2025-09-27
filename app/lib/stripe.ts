@@ -17,10 +17,10 @@ export const PAYMENT_CONFIG = {
   SELFIE_PRICE: 500, // €5.00 in cents
   CURRENCY: 'eur',
   SUCCESS_URL: process.env.NODE_ENV === 'production'
-    ? 'https://your-domain.com/payment/success'
+    ? `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://login-selfie-v01-light.vercel.app'}/payment/success`
     : 'http://localhost:3000/payment/success',
   CANCEL_URL: process.env.NODE_ENV === 'production'
-    ? 'https://your-domain.com/payment/cancel'
+    ? `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://login-selfie-v01-light.vercel.app'}/payment/cancel`
     : 'http://localhost:3000/payment/cancel',
 } as const
 

@@ -17,7 +17,8 @@ export async function POST(request: NextRequest) {
     const consent = ConsentSchema.parse(body)
 
     // Generate a temporary session ID for fallback mode
-    const sessionId = require('uuid').v4()
+    const { v4: uuidv4 } = await import('uuid')
+    const sessionId = uuidv4()
 
     // FALLBACK MODE: Use cookie-based session when database is unavailable
     try {
