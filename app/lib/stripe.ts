@@ -60,7 +60,7 @@ function createVercelOptimizedStripe(): Stripe {
 // VERCEL SERVERLESS RETRY MECHANISM
 // Handles networking issues common in serverless environments
 async function retryStripeCall<T>(fn: () => Promise<T>, maxRetries = 5): Promise<T> {
-  let lastError: Error
+  let lastError: Error = new Error('No attempts made')
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {

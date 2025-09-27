@@ -1,9 +1,11 @@
-// EMERGENCY REVENUE FIX - DATABASE-FREE PAYMENT SESSION API
-// Creates Stripe payment sessions without database dependency
+// VERCEL SERVERLESS STRIPE FIX - Direct API approach
+// Bypasses Stripe SDK networking issues on Vercel
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createPaymentSession } from '@/app/lib/stripe'
 import { z } from 'zod'
+
+// Force Edge Runtime for better Vercel networking
+export const runtime = 'edge'
 
 const createPaymentSchema = z.object({
   sessionId: z.string().min(1, 'Session ID is required'),
@@ -19,127 +21,72 @@ export async function POST(request: NextRequest) {
 
     console.log(`💳 Creating payment session for: ${sessionId}`)
 
-    // Check if session exists in temp file system
-    let sessionExists = false
-    try {
-      const fs = require('fs')
-      const path = require('path')
-      const tempFile = path.join('/tmp', `session_${sessionId}.json`)
+    // EDGE RUNTIME: No file system access, allow all payment requests
+    console.log('🚀 Edge Runtime - allowing payment for session:', sessionId)
 
-      if (fs.existsSync(tempFile)) {
-        const sessionData = JSON.parse(fs.readFileSync(tempFile, 'utf8'))
-        console.log(`✅ Found session in temp file: ${tempFile}`)
-        sessionExists = true
+    // VERCEL FIX: Direct Stripe API call (no SDK)
+    // This bypasses the networking issues with Stripe SDK on Vercel
+    console.log('💳 Creating Stripe session via direct API call...')
 
-        // Check if already paid
-        if (sessionData.paymentStatus === 'PAID') {
-          return NextResponse.json(
-            { error: 'Session already paid' },
-            { status: 400 }
-          )
-        }
-      } else {
-        console.log(`⚠️ Session temp file not found: ${tempFile}`)
-      }
-    } catch (error) {
-      console.warn('⚠️ Could not check temp file, continuing anyway:', error)
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY not configured')
     }
 
-    // For emergency revenue recovery, allow payment even if session not found
-    // This ensures Stripe payment window always opens
-    if (!sessionExists) {
-      console.log('⚠️ Session not found in temp files, but allowing payment for revenue recovery')
-    }
+    const stripeResponse = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.STRIPE_SECRET_KEY}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Stripe-Version': '2025-08-27.basil',
+        'User-Agent': 'Vercel-Edge-Runtime',
+      },
+      body: new URLSearchParams({
+        'mode': 'payment',
+        'payment_method_types[0]': 'card',
+        'line_items[0][price_data][currency]': 'eur',
+        'line_items[0][price_data][product_data][name]': 'AI Selfie Generation',
+        'line_items[0][price_data][product_data][description]': 'Professional AI selfie with GDPR compliance',
+        'line_items[0][price_data][unit_amount]': '500',
+        'line_items[0][quantity]': '1',
+        'success_url': `https://login-selfie-v01-light.vercel.app/payment/success?session_id={CHECKOUT_SESSION_ID}&app_session=${sessionId}`,
+        'cancel_url': `https://login-selfie-v01-light.vercel.app/payment/cancel?app_session=${sessionId}`,
+        'metadata[sessionId]': sessionId,
+        'metadata[service]': 'selfie_generation',
+        'metadata[gdprConsent]': 'true',
+        'expires_at': (Math.floor(Date.now() / 1000) + (30 * 60)).toString(),
+      }).toString(),
+    })
 
-    // Create Stripe payment session - with emergency fallback
-    console.log('💳 About to call createPaymentSession...')
-
-    let paymentSession
-    try {
-      paymentSession = await createPaymentSession(sessionId)
-      console.log('✅ createPaymentSession succeeded via Stripe SDK')
-    } catch (error) {
-      console.error('💥 Stripe SDK failed, trying emergency proxy:', error)
-
-      // EMERGENCY FALLBACK: Use direct HTTP call instead of proxy
-      const proxyResponse = await fetch('https://api.stripe.com/v1/checkout/sessions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.STRIPE_SECRET_KEY}`,
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Stripe-Version': '2025-08-27.basil',
-        },
-        body: new URLSearchParams({
-          'mode': 'payment',
-          'payment_method_types[0]': 'card',
-          'line_items[0][price_data][currency]': 'eur',
-          'line_items[0][price_data][product_data][name]': 'AI Selfie Generation',
-          'line_items[0][price_data][unit_amount]': '500',
-          'line_items[0][quantity]': '1',
-          'success_url': `https://login-selfie-v01-light.vercel.app/payment/success?session_id={CHECKOUT_SESSION_ID}&app_session=${sessionId}`,
-          'cancel_url': `https://login-selfie-v01-light.vercel.app/payment/cancel?app_session=${sessionId}`,
-          'metadata[sessionId]': sessionId,
-          'metadata[service]': 'selfie_generation',
-          'expires_at': (Math.floor(Date.now() / 1000) + (30 * 60)).toString(),
-        }).toString(),
+    if (!stripeResponse.ok) {
+      const errorText = await stripeResponse.text()
+      console.error('💥 Stripe API error:', {
+        status: stripeResponse.status,
+        statusText: stripeResponse.statusText,
+        error: errorText
       })
+      throw new Error(`Stripe API error: ${stripeResponse.status} - ${errorText}`)
+    }
 
-      if (!proxyResponse.ok) {
-        const errorText = await proxyResponse.text()
-        console.error('💥 Direct HTTP fallback also failed:', errorText)
-        throw new Error('Both Stripe SDK and direct HTTP failed')
-      }
-
-      const session = await proxyResponse.json()
-      paymentSession = {
-        id: session.id,
-        url: session.url
-      }
-      console.log('✅ Direct HTTP fallback succeeded')
+    const session = await stripeResponse.json()
+    const paymentSession = {
+      id: session.id,
+      url: session.url
     }
 
     console.log(`✅ Stripe payment session created: ${paymentSession.id}`)
     console.log(`💰 Payment URL: ${paymentSession.url}`)
 
-    // Try to update temp file with payment info
-    try {
-      const fs = require('fs')
-      const path = require('path')
-      const tempFile = path.join('/tmp', `session_${sessionId}.json`)
-
-      if (fs.existsSync(tempFile)) {
-        const sessionData = JSON.parse(fs.readFileSync(tempFile, 'utf8'))
-        sessionData.stripeSessionId = paymentSession.id
-        sessionData.paymentStatus = 'PENDING'
-        sessionData.paymentCreated = new Date().toISOString()
-
-        fs.writeFileSync(tempFile, JSON.stringify(sessionData))
-        console.log(`✅ Updated temp file with payment info`)
-      } else {
-        // Create minimal session data for payment tracking
-        const minimalSession = {
-          sessionId,
-          stripeSessionId: paymentSession.id,
-          paymentStatus: 'PENDING',
-          paymentCreated: new Date().toISOString(),
-          emergencyMode: true
-        }
-        fs.writeFileSync(tempFile, JSON.stringify(minimalSession))
-        console.log(`✅ Created minimal session for payment tracking`)
-      }
-    } catch (error) {
-      console.warn('⚠️ Could not update temp file, but payment session created:', error)
-    }
-
-    // Return payment session URL - THIS IS CRITICAL FOR REVENUE
+    // Return payment session URL - CRITICAL FOR REVENUE
     return NextResponse.json({
       success: true,
       paymentUrl: paymentSession.url,
       sessionId: paymentSession.id,
+      amount: 500,
+      currency: 'eur',
       debug: {
-        emergencyMode: true,
+        runtime: 'edge',
         timestamp: new Date().toISOString(),
-        sessionExists
+        stripeApiVersion: '2025-08-27.basil'
       }
     })
 
@@ -166,7 +113,7 @@ export async function POST(request: NextRequest) {
           error: error instanceof Error ? error.message : 'Unknown error',
           errorType: error?.constructor?.name || 'Unknown',
           timestamp: new Date().toISOString(),
-          emergencyMode: true
+          runtime: 'edge'
         }
       },
       { status: 500 }

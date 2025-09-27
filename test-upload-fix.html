@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Fix Test</title>
+</head>
+<body>
+    <h1>Upload Fix Test</h1>
+    <p>To test the upload interface fix:</p>
+    <ol>
+        <li>Open <a href="http://localhost:3000" target="_blank">http://localhost:3000</a></li>
+        <li>Scroll down to the upload interface</li>
+        <li>Test the "CHOOSE FILE" button - it should open the file dialog</li>
+        <li>Test drag-and-drop functionality - it should still work</li>
+        <li>Check browser console for any JavaScript errors</li>
+    </ol>
+
+    <h2>What was fixed:</h2>
+    <ul>
+        <li>Moved drag event handlers to the correct container element</li>
+        <li>Added event.stopPropagation() to prevent click interference</li>
+        <li>Maintained all existing drag-and-drop functionality</li>
+    </ul>
+</body>
+</html>
