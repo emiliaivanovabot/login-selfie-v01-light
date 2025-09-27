@@ -210,17 +210,18 @@ export default function PrivacyFirstUploadInterface() {
             : 'from-purple-600 to-blue-600 group-hover:opacity-30'
         }`}></div>
 
-        <div className={`relative backdrop-blur-xl border-2 border-dashed rounded-3xl p-12 text-center transition-all duration-500 ${
-          dragActive
-            ? 'bg-white/10 border-purple-400/60'
-            : 'bg-white/5 border-white/20 hover:border-purple-400/40 hover:bg-white/8'
-        }`}>
+        <div
+          className={`relative backdrop-blur-xl border-2 border-dashed rounded-3xl p-12 text-center transition-all duration-500 ${
+            dragActive
+              ? 'bg-white/10 border-purple-400/60'
+              : 'bg-white/5 border-white/20 hover:border-purple-400/40 hover:bg-white/8'
+          }`}
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+        >
           {!uploadState.preview ? (
-            <div
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-            >
+            <div>
               <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-2xl transition-all duration-500 ${
                 dragActive
                   ? 'bg-gradient-to-br from-purple-500 to-blue-500 scale-110 rotate-6'
@@ -237,7 +238,10 @@ export default function PrivacyFirstUploadInterface() {
               </p>
 
               <button
-                onClick={() => fileInputRef.current?.click()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  fileInputRef.current?.click();
+                }}
                 className="group/btn relative inline-flex items-center px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl text-white font-semibold shadow-2xl transform transition-all duration-300 hover:scale-105 hover:shadow-purple-500/25"
               >
                 <span className="relative z-10 flex items-center gap-3">

@@ -8,7 +8,7 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2024-06-20',
+  apiVersion: '2025-08-27.basil',
   typescript: true,
   timeout: 20000, // 20 seconds timeout for serverless
   maxNetworkRetries: 3, // More retries for connectivity
@@ -45,8 +45,8 @@ export async function createPaymentSession(sessionId: string): Promise<Stripe.Ch
     })
 
     // Minimal session creation for serverless reliability
-    const sessionConfig = {
-      mode: 'payment' as const,
+    const sessionConfig: Stripe.Checkout.SessionCreateParams = {
+      mode: 'payment',
       payment_method_types: ['card'],
       line_items: [
         {
