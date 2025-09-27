@@ -18,13 +18,14 @@ export async function GET(request: NextRequest) {
 
     console.log('✅ Stripe secret key found')
 
-    // Test Stripe initialization
+    // Test Stripe initialization - USE SAME CONFIG AS PRODUCTION
     const Stripe = require('stripe')
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2024-06-20',
+      apiVersion: '2025-08-27.basil', // MUST match production!
       typescript: true,
-      timeout: 10000, // 10 seconds
-      maxNetworkRetries: 1,
+      timeout: 30000, // 30 seconds for Vercel serverless
+      maxNetworkRetries: 3, // More retries for Vercel networking
+      httpAgent: undefined, // Let Stripe handle connections optimally
     })
 
     console.log('✅ Stripe client initialized')
@@ -89,8 +90,10 @@ export async function POST(request: NextRequest) {
 
     const Stripe = require('stripe')
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2024-06-20',
-      timeout: 15000,
+      apiVersion: '2025-08-27.basil', // Match production
+      timeout: 30000, // Longer timeout for Vercel
+      maxNetworkRetries: 3,
+      httpAgent: undefined,
     })
 
     // Test minimal payment session creation

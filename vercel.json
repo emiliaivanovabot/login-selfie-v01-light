@@ -4,7 +4,20 @@
   "installCommand": "npm install",
   "functions": {
     "app/api/**": {
-      "maxDuration": 30
+      "maxDuration": 30,
+      "runtime": "nodejs22.x"
+    },
+    "app/api/create-payment-session/**": {
+      "maxDuration": 60,
+      "runtime": "nodejs22.x"
+    },
+    "app/api/test-stripe-connection/**": {
+      "maxDuration": 60,
+      "runtime": "nodejs22.x"
+    },
+    "app/api/stripe/**": {
+      "maxDuration": 60,
+      "runtime": "nodejs22.x"
     }
   },
   "build": {

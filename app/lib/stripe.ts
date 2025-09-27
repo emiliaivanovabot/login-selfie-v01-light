@@ -10,9 +10,12 @@ if (!process.env.STRIPE_SECRET_KEY) {
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2025-08-27.basil', // Must match webhook API version!
   typescript: true,
-  timeout: 20000, // 20 seconds timeout for serverless
-  maxNetworkRetries: 3, // More retries for connectivity
-  httpAgent: undefined, // Let Stripe handle connections
+  timeout: 30000, // 30 seconds timeout for Vercel serverless
+  maxNetworkRetries: 5, // More retries for Vercel networking issues
+  httpAgent: undefined, // Let Stripe handle connections optimally
+  // Vercel serverless optimizations
+  telemetry: false, // Reduce overhead
+  stripeAccount: undefined, // Use default account
 })
 
 // Payment configuration for selfie generation
@@ -33,6 +36,53 @@ export interface PaymentSessionMetadata {
   gdprConsent: string
 }
 
+// VERCEL SERVERLESS RETRY MECHANISM
+// Handles networking issues common in serverless environments
+async function retryStripeCall<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
+  let lastError: Error
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`🔄 Stripe API attempt ${attempt}/${maxRetries}`)
+
+      // Add progressive delay between retries
+      if (attempt > 1) {
+        const delay = Math.min(1000 * Math.pow(2, attempt - 2), 5000) // Max 5 seconds
+        console.log(`⏳ Waiting ${delay}ms before retry...`)
+        await new Promise(resolve => setTimeout(resolve, delay))
+      }
+
+      const result = await Promise.race([
+        fn(),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Stripe API timeout after 25 seconds')), 25000)
+        )
+      ])
+
+      console.log(`✅ Stripe API call succeeded on attempt ${attempt}`)
+      return result
+
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error('Unknown error')
+      console.error(`❌ Stripe API attempt ${attempt} failed:`, lastError.message)
+
+      // Don't retry on authentication errors
+      if (lastError.message.includes('Invalid API Key') ||
+          lastError.message.includes('authentication')) {
+        throw lastError
+      }
+
+      // Don't retry on final attempt
+      if (attempt === maxRetries) {
+        break
+      }
+    }
+  }
+
+  console.error(`💥 All ${maxRetries} Stripe API attempts failed`)
+  throw new Error(`Stripe API failed after ${maxRetries} attempts. Last error: ${lastError.message}`)
+}
+
 // Create payment session for selfie generation
 export async function createPaymentSession(sessionId: string): Promise<Stripe.Checkout.Session> {
   try {
@@ -44,7 +94,9 @@ export async function createPaymentSession(sessionId: string): Promise<Stripe.Ch
       cancelUrl: PAYMENT_CONFIG.CANCEL_URL,
       env: process.env.NODE_ENV,
       stripeKeyExists: !!process.env.STRIPE_SECRET_KEY,
-      stripeKeyPrefix: process.env.STRIPE_SECRET_KEY?.substring(0, 8)
+      stripeKeyPrefix: process.env.STRIPE_SECRET_KEY?.substring(0, 8),
+      vercelRegion: process.env.VERCEL_REGION || 'unknown',
+      runtime: 'serverless'
     })
 
     // Validate environment
@@ -82,7 +134,10 @@ export async function createPaymentSession(sessionId: string): Promise<Stripe.Ch
     console.log('🔧 About to call Stripe API...')
     console.log('🔧 Session config:', JSON.stringify(sessionConfig, null, 2))
 
-    const session = await stripe.checkout.sessions.create(sessionConfig)
+    // VERCEL SERVERLESS FIX: Use promise with explicit timeout and retry logic
+    const session = await retryStripeCall(() =>
+      stripe.checkout.sessions.create(sessionConfig)
+    )
 
     console.log('✅ Stripe session created successfully:', {
       id: session.id,
