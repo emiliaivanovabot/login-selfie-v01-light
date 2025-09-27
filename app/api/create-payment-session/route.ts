@@ -52,7 +52,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Create Stripe payment session - this is the critical part for revenue
+    console.log('💳 About to call createPaymentSession...')
     const paymentSession = await createPaymentSession(sessionId)
+    console.log('✅ createPaymentSession succeeded')
 
     console.log(`✅ Stripe payment session created: ${paymentSession.id}`)
     console.log(`💰 Payment URL: ${paymentSession.url}`)
@@ -101,6 +103,12 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('💥 Payment session creation error:', error)
+    console.error('💥 Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace',
+      type: typeof error,
+      constructor: error?.constructor?.name
+    })
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -114,7 +122,9 @@ export async function POST(request: NextRequest) {
         error: 'Failed to create payment session',
         debug: {
           error: error instanceof Error ? error.message : 'Unknown error',
-          timestamp: new Date().toISOString()
+          errorType: error?.constructor?.name || 'Unknown',
+          timestamp: new Date().toISOString(),
+          emergencyMode: true
         }
       },
       { status: 500 }

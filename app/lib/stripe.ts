@@ -33,6 +33,14 @@ export interface PaymentSessionMetadata {
 // Create payment session for selfie generation
 export async function createPaymentSession(sessionId: string): Promise<Stripe.Checkout.Session> {
   try {
+    console.log('🔧 Creating Stripe session with config:', {
+      sessionId,
+      price: PAYMENT_CONFIG.SELFIE_PRICE,
+      currency: PAYMENT_CONFIG.CURRENCY,
+      successUrl: PAYMENT_CONFIG.SUCCESS_URL,
+      cancelUrl: PAYMENT_CONFIG.CANCEL_URL
+    })
+
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
@@ -72,8 +80,15 @@ export async function createPaymentSession(sessionId: string): Promise<Stripe.Ch
 
     return session
   } catch (error) {
-    console.error('Stripe session creation failed:', error)
-    throw new Error('Failed to create payment session')
+    console.error('💥 Stripe session creation failed:', error)
+    console.error('💥 Stripe error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      type: error?.constructor?.name,
+      code: (error as any)?.code,
+      param: (error as any)?.param,
+      statusCode: (error as any)?.statusCode
+    })
+    throw new Error(`Failed to create payment session: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
 }
 
