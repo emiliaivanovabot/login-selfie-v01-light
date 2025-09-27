@@ -51,10 +51,52 @@ export async function POST(request: NextRequest) {
       console.log('⚠️ Session not found in temp files, but allowing payment for revenue recovery')
     }
 
-    // Create Stripe payment session - this is the critical part for revenue
+    // Create Stripe payment session - with emergency fallback
     console.log('💳 About to call createPaymentSession...')
-    const paymentSession = await createPaymentSession(sessionId)
-    console.log('✅ createPaymentSession succeeded')
+
+    let paymentSession
+    try {
+      paymentSession = await createPaymentSession(sessionId)
+      console.log('✅ createPaymentSession succeeded via Stripe SDK')
+    } catch (error) {
+      console.error('💥 Stripe SDK failed, trying emergency proxy:', error)
+
+      // EMERGENCY FALLBACK: Use direct HTTP call instead of proxy
+      const proxyResponse = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.STRIPE_SECRET_KEY}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Stripe-Version': '2025-08-27.basil',
+        },
+        body: new URLSearchParams({
+          'mode': 'payment',
+          'payment_method_types[0]': 'card',
+          'line_items[0][price_data][currency]': 'eur',
+          'line_items[0][price_data][product_data][name]': 'AI Selfie Generation',
+          'line_items[0][price_data][unit_amount]': '500',
+          'line_items[0][quantity]': '1',
+          'success_url': `https://login-selfie-v01-light.vercel.app/payment/success?session_id={CHECKOUT_SESSION_ID}&app_session=${sessionId}`,
+          'cancel_url': `https://login-selfie-v01-light.vercel.app/payment/cancel?app_session=${sessionId}`,
+          'metadata[sessionId]': sessionId,
+          'metadata[service]': 'selfie_generation',
+          'expires_at': (Math.floor(Date.now() / 1000) + (30 * 60)).toString(),
+        }).toString(),
+      })
+
+      if (!proxyResponse.ok) {
+        const errorText = await proxyResponse.text()
+        console.error('💥 Direct HTTP fallback also failed:', errorText)
+        throw new Error('Both Stripe SDK and direct HTTP failed')
+      }
+
+      const session = await proxyResponse.json()
+      paymentSession = {
+        id: session.id,
+        url: session.url
+      }
+      console.log('✅ Direct HTTP fallback succeeded')
+    }
 
     console.log(`✅ Stripe payment session created: ${paymentSession.id}`)
     console.log(`💰 Payment URL: ${paymentSession.url}`)
