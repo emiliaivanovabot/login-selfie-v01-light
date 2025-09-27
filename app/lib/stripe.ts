@@ -8,6 +8,7 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: '2025-08-27.basil', // Must match webhook API version!
   typescript: true,
   timeout: 20000, // 20 seconds timeout for serverless
   maxNetworkRetries: 3, // More retries for connectivity
