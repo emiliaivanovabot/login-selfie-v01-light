@@ -10,6 +10,9 @@ if (!process.env.STRIPE_SECRET_KEY) {
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2024-06-20',
   typescript: true,
+  timeout: 20000, // 20 seconds timeout for serverless
+  maxNetworkRetries: 3, // More retries for connectivity
+  httpAgent: undefined, // Let Stripe handle connections
 })
 
 // Payment configuration for selfie generation
@@ -41,8 +44,9 @@ export async function createPaymentSession(sessionId: string): Promise<Stripe.Ch
       cancelUrl: PAYMENT_CONFIG.CANCEL_URL
     })
 
-    const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
+    // Minimal session creation for serverless reliability
+    const sessionConfig = {
+      mode: 'payment' as const,
       payment_method_types: ['card'],
       line_items: [
         {
@@ -50,8 +54,7 @@ export async function createPaymentSession(sessionId: string): Promise<Stripe.Ch
             currency: PAYMENT_CONFIG.CURRENCY,
             product_data: {
               name: 'AI Selfie Generation',
-              description: 'Generate a professional AI-enhanced selfie with GDPR compliance',
-              images: [], // Add product images if needed
+              description: 'Professional AI selfie with GDPR compliance',
             },
             unit_amount: PAYMENT_CONFIG.SELFIE_PRICE,
           },
@@ -64,19 +67,12 @@ export async function createPaymentSession(sessionId: string): Promise<Stripe.Ch
         sessionId,
         service: 'selfie_generation',
         gdprConsent: 'true',
-      } satisfies PaymentSessionMetadata,
-      // GDPR compliance
-      customer_creation: 'if_required',
-      billing_address_collection: 'required',
-      // Session expires in 30 minutes
-      expires_at: Math.floor(Date.now() / 1000) + (30 * 60),
-      // Custom branding
-      custom_text: {
-        submit: {
-          message: 'Your payment is processed securely by Stripe. Data will be deleted within 24 hours per GDPR compliance.',
-        },
       },
-    })
+      expires_at: Math.floor(Date.now() / 1000) + (30 * 60), // 30 minutes
+    }
+
+    console.log('🔧 Calling Stripe API with minimal config for serverless reliability...')
+    const session = await stripe.checkout.sessions.create(sessionConfig)
 
     return session
   } catch (error) {
