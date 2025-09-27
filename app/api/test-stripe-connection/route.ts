@@ -18,14 +18,21 @@ export async function GET(request: NextRequest) {
 
     console.log('✅ Stripe secret key found')
 
-    // Test Stripe initialization - USE SAME CONFIG AS PRODUCTION
+    // Test Stripe initialization - VERCEL OPTIMIZED CONFIG
     const Stripe = require('stripe')
+    const isVercel = !!process.env.VERCEL_URL
+
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
       apiVersion: '2025-08-27.basil', // MUST match production!
       typescript: true,
-      timeout: 30000, // 30 seconds for Vercel serverless
-      maxNetworkRetries: 3, // More retries for Vercel networking
-      httpAgent: undefined, // Let Stripe handle connections optimally
+      timeout: isVercel ? 60000 : 30000, // Longer timeout for Vercel
+      maxNetworkRetries: 0, // Handle retries manually
+      httpAgent: undefined,
+      // Vercel-specific optimizations
+      host: 'api.stripe.com',
+      port: 443,
+      protocol: 'https',
+      telemetry: false,
     })
 
     console.log('✅ Stripe client initialized')

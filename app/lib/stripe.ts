@@ -10,12 +10,16 @@ if (!process.env.STRIPE_SECRET_KEY) {
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2025-08-27.basil', // Must match webhook API version!
   typescript: true,
-  timeout: 30000, // 30 seconds timeout for Vercel serverless
-  maxNetworkRetries: 5, // More retries for Vercel networking issues
+  timeout: 40000, // Longer timeout for Vercel Edge regions
+  maxNetworkRetries: 0, // Disable Stripe's internal retries - we handle it
   httpAgent: undefined, // Let Stripe handle connections optimally
   // Vercel serverless optimizations
   telemetry: false, // Reduce overhead
   stripeAccount: undefined, // Use default account
+  // Alternative connectivity options for Vercel
+  host: 'api.stripe.com', // Explicit host
+  port: 443, // Explicit HTTPS port
+  protocol: 'https', // Force HTTPS
 })
 
 // Payment configuration for selfie generation
@@ -36,9 +40,31 @@ export interface PaymentSessionMetadata {
   gdprConsent: string
 }
 
+// VERCEL NETWORKING BYPASS
+// Creates new Stripe instance with optimized settings for each call
+function createVercelOptimizedStripe(): Stripe {
+  const isVercel = !!process.env.VERCEL_URL
+
+  if (isVercel) {
+    console.log('🚀 Using Vercel-optimized Stripe configuration')
+    return new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: '2025-08-27.basil',
+      timeout: 60000, // Maximum timeout for Vercel
+      maxNetworkRetries: 0, // Handle retries manually
+      telemetry: false,
+      // Vercel-specific networking optimizations
+      host: 'api.stripe.com',
+      port: 443,
+      protocol: 'https',
+    })
+  }
+
+  return stripe // Use default for local development
+}
+
 // VERCEL SERVERLESS RETRY MECHANISM
 // Handles networking issues common in serverless environments
-async function retryStripeCall<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
+async function retryStripeCall<T>(fn: () => Promise<T>, maxRetries = 5): Promise<T> {
   let lastError: Error
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -134,9 +160,10 @@ export async function createPaymentSession(sessionId: string): Promise<Stripe.Ch
     console.log('🔧 About to call Stripe API...')
     console.log('🔧 Session config:', JSON.stringify(sessionConfig, null, 2))
 
-    // VERCEL SERVERLESS FIX: Use promise with explicit timeout and retry logic
+    // VERCEL SERVERLESS FIX: Use optimized Stripe instance with retry logic
+    const stripeClient = createVercelOptimizedStripe()
     const session = await retryStripeCall(() =>
-      stripe.checkout.sessions.create(sessionConfig)
+      stripeClient.checkout.sessions.create(sessionConfig)
     )
 
     console.log('✅ Stripe session created successfully:', {

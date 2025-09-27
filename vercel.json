@@ -9,17 +9,21 @@
     },
     "app/api/create-payment-session/**": {
       "maxDuration": 60,
-      "runtime": "nodejs22.x"
+      "runtime": "nodejs22.x",
+      "memory": 1024
     },
     "app/api/test-stripe-connection/**": {
       "maxDuration": 60,
-      "runtime": "nodejs22.x"
+      "runtime": "nodejs22.x",
+      "memory": 1024
     },
     "app/api/stripe/**": {
       "maxDuration": 60,
-      "runtime": "nodejs22.x"
+      "runtime": "nodejs22.x",
+      "memory": 1024
     }
   },
+  "regions": ["fra1", "iad1"],
   "build": {
     "env": {
       "GDPR_EU_DATA_RESIDENCY": "true",
