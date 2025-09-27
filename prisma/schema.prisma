@@ -6,14 +6,13 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
 }
 
 // GDPR-compliant generation sessions with automatic expiry
 model GenerationSession {
-  sessionId         String   @id @db.Uuid @default(dbgenerated("gen_random_uuid()")) @map("session_id")
+  sessionId         String   @id @default(uuid()) @map("session_id")
 
   // File handling - temporary storage only
   uploadFilename    String?  @map("upload_filename")
@@ -50,8 +49,8 @@ model GenerationSession {
 
 // GDPR Article 30 - Records of processing activities
 model DataProcessingLog {
-  id          String   @id @db.Uuid @default(dbgenerated("gen_random_uuid()"))
-  sessionId   String   @db.Uuid @map("session_id")
+  id          String   @id @default(uuid())
+  sessionId   String   @map("session_id")
   session     GenerationSession @relation(fields: [sessionId], references: [sessionId], onDelete: Cascade)
 
   action      String   // "upload", "payment", "generation", "download", "delete"
@@ -68,8 +67,8 @@ model DataProcessingLog {
 
 // Data deletion requests for GDPR Article 17
 model DataDeletionRequest {
-  id          String   @id @db.Uuid @default(dbgenerated("gen_random_uuid()"))
-  sessionId   String   @unique @db.Uuid @map("session_id")
+  id          String   @id @default(uuid())
+  sessionId   String   @unique @map("session_id")
 
   requestedAt DateTime @default(now()) @map("requested_at")
   processedAt DateTime? @map("processed_at")

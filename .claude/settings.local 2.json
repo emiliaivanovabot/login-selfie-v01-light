@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/bertanyalcintepe/.claude/**)",
+      "Bash(~/.claude/agent-delegation-tracker.sh:*)",
+      "Bash(bash:*)",
+      "Read(//Users/bertanyalcintepe/Desktop/**)",
+      "Bash(xargs ls:*)",
+      "Bash(printf \"n\\ny\\n\")",
+      "Bash(npx create-next-app:*)",
+      "Bash(npm init:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tailwindcss init:*)",
+      "Bash(tree:*)",
+      "Bash(find:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(gh repo create:*)",
+      "Bash(vercel:*)",
+      "Bash(git commit:*)",
+      "Bash(gh repo sync:*)",
+      "Bash(git push:*)",
+      "Bash(git add:*)",
+      "WebFetch(domain:login-selfie-v01-light.vercel.app)",
+      "Bash(curl:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:login-selfie-v01-light-5dqoauo2n-emilias-projects-63a744e0.vercel.app)",
+      "Bash(cat:*)",
+      "Bash(lsof:*)",
+      "Bash(pkill:*)",
+      "Bash(kill:*)",
+      "Bash(npm run dev:*)",
+      "WebFetch(domain:localhost)",
+      "Bash(xargs kill:*)",
+      "Read(//private/tmp/claude/**)",
+      "Bash(npx prisma migrate:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
