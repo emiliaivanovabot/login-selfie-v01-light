@@ -12,14 +12,11 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   typescript: true,
   timeout: 40000, // Longer timeout for Vercel Edge regions
   maxNetworkRetries: 0, // Disable Stripe's internal retries - we handle it
-  httpAgent: undefined, // Let Stripe handle connections optimally
+  // VERCEL FIX: Use Fetch HTTP Client instead of Node.js sockets
+  httpClient: Stripe.createFetchHttpClient(),
   // Vercel serverless optimizations
   telemetry: false, // Reduce overhead
   stripeAccount: undefined, // Use default account
-  // Alternative connectivity options for Vercel
-  host: 'api.stripe.com', // Explicit host
-  port: 443, // Explicit HTTPS port
-  protocol: 'https', // Force HTTPS
 })
 
 // Payment configuration for selfie generation
@@ -46,16 +43,14 @@ function createVercelOptimizedStripe(): Stripe {
   const isVercel = !!process.env.VERCEL_URL
 
   if (isVercel) {
-    console.log('🚀 Using Vercel-optimized Stripe configuration')
+    console.log('🚀 Using Vercel-optimized Stripe configuration with Fetch HTTP Client')
     return new Stripe(process.env.STRIPE_SECRET_KEY!, {
       apiVersion: '2025-08-27.basil',
       timeout: 60000, // Maximum timeout for Vercel
       maxNetworkRetries: 0, // Handle retries manually
       telemetry: false,
-      // Vercel-specific networking optimizations
-      host: 'api.stripe.com',
-      port: 443,
-      protocol: 'https',
+      // VERCEL FIX: Use Fetch HTTP Client for serverless compatibility
+      httpClient: Stripe.createFetchHttpClient(),
     })
   }
 
