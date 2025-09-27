@@ -8,7 +8,6 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2025-08-27.basil',
   typescript: true,
   timeout: 20000, // 20 seconds timeout for serverless
   maxNetworkRetries: 3, // More retries for connectivity
@@ -20,10 +19,10 @@ export const PAYMENT_CONFIG = {
   SELFIE_PRICE: 500, // €5.00 in cents
   CURRENCY: 'eur',
   SUCCESS_URL: process.env.NODE_ENV === 'production'
-    ? `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://login-selfie-v01-light.vercel.app'}/payment/success`
+    ? 'https://login-selfie-v01-light.vercel.app/payment/success'
     : 'http://localhost:3000/payment/success',
   CANCEL_URL: process.env.NODE_ENV === 'production'
-    ? `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://login-selfie-v01-light.vercel.app'}/payment/cancel`
+    ? 'https://login-selfie-v01-light.vercel.app/payment/cancel'
     : 'http://localhost:3000/payment/cancel',
 } as const
 
@@ -41,8 +40,16 @@ export async function createPaymentSession(sessionId: string): Promise<Stripe.Ch
       price: PAYMENT_CONFIG.SELFIE_PRICE,
       currency: PAYMENT_CONFIG.CURRENCY,
       successUrl: PAYMENT_CONFIG.SUCCESS_URL,
-      cancelUrl: PAYMENT_CONFIG.CANCEL_URL
+      cancelUrl: PAYMENT_CONFIG.CANCEL_URL,
+      env: process.env.NODE_ENV,
+      stripeKeyExists: !!process.env.STRIPE_SECRET_KEY,
+      stripeKeyPrefix: process.env.STRIPE_SECRET_KEY?.substring(0, 8)
     })
+
+    // Validate environment
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY environment variable is not set')
+    }
 
     // Minimal session creation for serverless reliability
     const sessionConfig: Stripe.Checkout.SessionCreateParams = {
@@ -71,19 +78,39 @@ export async function createPaymentSession(sessionId: string): Promise<Stripe.Ch
       expires_at: Math.floor(Date.now() / 1000) + (30 * 60), // 30 minutes
     }
 
-    console.log('🔧 Calling Stripe API with minimal config for serverless reliability...')
+    console.log('🔧 About to call Stripe API...')
+    console.log('🔧 Session config:', JSON.stringify(sessionConfig, null, 2))
+
     const session = await stripe.checkout.sessions.create(sessionConfig)
+
+    console.log('✅ Stripe session created successfully:', {
+      id: session.id,
+      url: session.url,
+      status: session.status
+    })
 
     return session
   } catch (error) {
     console.error('💥 Stripe session creation failed:', error)
-    console.error('💥 Stripe error details:', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      type: error?.constructor?.name,
-      code: (error as any)?.code,
-      param: (error as any)?.param,
-      statusCode: (error as any)?.statusCode
-    })
+    console.error('💥 Error type:', error?.constructor?.name)
+    console.error('💥 Error message:', error instanceof Error ? error.message : 'Unknown error')
+
+    if (error instanceof Error) {
+      console.error('💥 Error stack:', error.stack)
+    }
+
+    // Log Stripe-specific error details
+    if ((error as any)?.type) {
+      console.error('💥 Stripe error details:', {
+        type: (error as any).type,
+        code: (error as any).code,
+        param: (error as any).param,
+        statusCode: (error as any).statusCode,
+        message: (error as any).message,
+        request_id: (error as any).request_id
+      })
+    }
+
     throw new Error(`Failed to create payment session: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
 }
